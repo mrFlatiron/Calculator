@@ -102,7 +102,7 @@ bool ExprLexer::process_char_consuming_token (char c)
 
   if (is_sign (c))
     {
-      if (append_to_possible_number (c))
+      if (try_append_to_possible_number (c))
         return true;
 
       if (!m_token_buf.empty ())
@@ -126,7 +126,7 @@ bool ExprLexer::process_char_consuming_token (char c)
       return false;
     }
 
-  if (!append_to_possible_number (c))
+  if (!try_append_to_possible_number (c))
     {
       set_error (ExprLexerErrorType::InvalidNumber);
       return false;
@@ -188,9 +188,9 @@ bool ExprLexer::process_token_buf ()
   return true;
 }
 
-bool ExprLexer::append_to_possible_number (char c)
+bool ExprLexer::try_append_to_possible_number (char c)
 {
-  return m_double_scanner.append (c);
+  return m_double_scanner.try_append (c);
 }
 
 Operator ExprLexer::append_arity_qualificator (Operator src) const

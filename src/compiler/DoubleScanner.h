@@ -10,7 +10,7 @@ public:
   DoubleScanner (CharBuf<256> &buf);
 
   void clear ();
-  bool append (char c);
+  bool try_append (char c);
   double get_double (bool &is_ok) const;
 private:
   enum class sign_t

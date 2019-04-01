@@ -73,7 +73,7 @@ private:
   bool process_char_consuming_token (char c);
 
   bool process_token_buf ();
-  bool append_to_possible_number (char c);
+  bool try_append_to_possible_number (char c);
   Operator append_arity_qualificator (Operator src) const;
 
   void set_state (ExprLexerState state);

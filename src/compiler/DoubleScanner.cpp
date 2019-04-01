@@ -17,7 +17,7 @@ void DoubleScanner::clear ()
   m_exp_sign_pos = -1;
 }
 
-bool DoubleScanner::append (char c)
+bool DoubleScanner::try_append (char c)
 {
   if (is_digit (c))
     {
