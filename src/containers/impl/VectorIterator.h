@@ -4,15 +4,45 @@
 #include <iterator>
 #include "gold/debug_assert.h"
 
-namespace detail
+namespace nostd
 {
+
+struct false_type
+{
+  static constexpr bool value = false;
+
+  constexpr operator bool () {return value;}
+};
+
+struct true_type
+{
+  static constexpr bool value = true;
+
+  constexpr operator bool () {return value;}
+};
+
+template<typename>
+struct is_const
+    : public false_type { };
+
+template<typename _Tp>
+struct is_const<_Tp const>
+    : public true_type { };
+
+template<typename T>
+struct add_const
+{ typedef T const type; };
+
+template<typename T>
+using add_const_t = typename add_const<T>::type;
+
 template<typename T, bool is_const>
 struct add_const_if {};
 
 template<typename T>
 struct add_const_if<T, true>
 {
-  using type = std::add_const_t<T>;
+  using type = nostd::add_const_t<T>;
 };
 
 template<typename T>
@@ -23,14 +53,14 @@ struct add_const_if<T, false>
 
 template<typename T, bool is_const>
 using add_const_if_t = typename add_const_if<T, is_const>::type;
-}
+} //namespace detail
 
 template<typename VectorType>
 struct VectorIterator
 {
   using self = VectorIterator<VectorType>;
   using value_type = typename VectorType::value_type;
-  using const_qual_value_type = detail::add_const_if_t<value_type, std::is_const<VectorType>::value>;
+  using const_qual_value_type = nostd::add_const_if_t<value_type, nostd::is_const<VectorType>::value>;
 private:
   VectorType *m_data = nullptr;
   int m_pos = -1;
@@ -117,6 +147,8 @@ public:
     return lhs.m_pos != rhs.m_pos;
   }
 };
+
+
 
 namespace std
 {

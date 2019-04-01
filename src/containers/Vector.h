@@ -1,13 +1,58 @@
 #ifndef Vector_H
 #define Vector_H
 
-#include <utility>
-#include <memory>
-#include <new>
-#include <cstring>
-#include <vector>
-
 #include "impl/VectorIterator.h"
+
+namespace nostd
+{
+//just copypaste from std to avoid including entire utility and memory
+
+template<typename>
+  struct is_lvalue_reference
+  : public false_type { };
+
+template<typename T>
+  struct is_lvalue_reference<T&>
+  : public true_type { };
+
+template<typename T>
+  struct remove_reference
+  { typedef T   type; };
+
+template<typename T>
+  struct remove_reference<T&>
+  { typedef T   type; };
+
+template<typename T>
+  struct remove_reference<T&&>
+  { typedef T   type; };
+
+template<typename T>
+constexpr typename nostd::remove_reference<T>::type&&
+move(T&& t) noexcept
+{ return static_cast<typename nostd::remove_reference<T>::type&&>(t); }
+
+template<typename T>
+constexpr T&&
+forward(typename nostd::remove_reference<T>::type& t) noexcept
+{ return static_cast<T&&>(t); }
+
+template<typename T>
+constexpr T&&
+forward(typename nostd::remove_reference<T>::type&& t) noexcept
+{
+  static_assert(!nostd::is_lvalue_reference<T>::value, "template argument"
+                                                       " substituting _Tp is an lvalue reference type");
+  return static_cast<T&&>(t);
+}
+
+template<typename T>
+void destroy_at (T *obj)
+{
+  obj->~T ();
+}
+} //namespace nostd
+
 
 
 
@@ -93,7 +138,7 @@ public:
     placement_allocate ();
 
     for (int i = 0; i < size; i++)
-      create_i (i, std::forward<V> (filling_value));
+      create_i (i, nostd::forward<V> (filling_value));
   }
 
   Vector (std::initializer_list<T> ilist)
@@ -107,7 +152,7 @@ public:
   {
     Vector temp (ilist);
 
-    *this = std::move (temp);
+    *this = nostd::move (temp);
 
     return *this;
   }
@@ -133,7 +178,7 @@ public:
     if (size <= m_size)
       {
         for (int i = size; i < m_size; i++)
-          std::destroy_at (reinterpreted ()[i]);
+          nostd::destroy_at (reinterpreted ()[i]);
 
         m_size = size;
 
@@ -203,7 +248,7 @@ public:
   void emplace_back (Args &&... args)
   {
     m_size++;
-    create_i (m_size - 1, std::forward<Args> (args)...);
+    create_i (m_size - 1, nostd::forward<Args> (args)...);
   }
 
   template<typename V>
@@ -275,7 +320,7 @@ private:
       return;
 
     for (int i = m_size - 1; i >= 0; i--)
-      std::destroy_at (&get_i (i));
+      nostd::destroy_at (&get_i (i));
 
     delete[] m_data;
   }
@@ -290,7 +335,7 @@ private:
     for (int i = 0; i < m_size; i++)
       buf.emplace_back (std::move (get_i (i)));
 
-    *this = std::move (buf);
+    *this = nostd::move (buf);
   }
 
   void placement_allocate ()

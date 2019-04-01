@@ -7,6 +7,7 @@
 #include "compiler/RpnCalculator.h"
 #include "compiler/ErrorPrinter.h"
 
+#include <cstring>
 #include <cstdio>
 
 int main (int argc, char *argv[])
